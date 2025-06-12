@@ -20,19 +20,32 @@ function initializeModalEvents() {
     const cancelBtn = document.getElementById('cancelBtn');
     const taskForm = document.getElementById('taskForm');
 
-    // モーダルを閉じる
+    // タスクモーダル
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
+    taskForm.addEventListener('submit', handleFormSubmit);
+
+    // セクションモーダル
+    const sectionModal = document.getElementById('sectionModal');
+    const closeSectionBtn = document.getElementById('closeSectionModal');
+    const cancelSectionBtn = document.getElementById('cancelSectionBtn');
+    const sectionForm = document.getElementById('sectionForm');
+    const addSectionBtn = document.getElementById('addSectionBtn');
+
+    closeSectionBtn.addEventListener('click', closeSectionModal);
+    cancelSectionBtn.addEventListener('click', closeSectionModal);
+    addSectionBtn.addEventListener('click', openAddSectionModal);
+    sectionForm.addEventListener('submit', handleSectionFormSubmit);
 
     // モーダル外クリックで閉じる
     window.addEventListener('click', function(e) {
         if (e.target === modal) {
             closeModal();
         }
+        if (e.target === sectionModal) {
+            closeSectionModal();
+        }
     });
-
-    // フォーム送信
-    taskForm.addEventListener('submit', handleFormSubmit);
 
     // リンク追加ボタン
     document.getElementById('addLinkBtn').addEventListener('click', addLinkItem);
@@ -108,32 +121,47 @@ function displayProjectData(data) {
 function createSectionElement(section) {
     const sectionDiv = document.createElement('div');
     sectionDiv.className = 'section';
+    sectionDiv.dataset.sectionId = section.id;
 
     // セクションタイトル
     const titleDiv = document.createElement('div');
-    titleDiv.className = 'section-title';
-    titleDiv.style.display = 'flex';
-    titleDiv.style.justifyContent = 'space-between';
-    titleDiv.style.alignItems = 'center';
+    titleDiv.className = 'section-title section-header';
 
     const titleText = document.createElement('span');
     titleText.textContent = `${section.icon} ${section.name}`;
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'section-actions';
 
     const addButton = document.createElement('button');
     addButton.className = 'add-task-btn';
     addButton.textContent = '+ タスク追加';
     addButton.addEventListener('click', () => openAddTaskModal(section.id));
 
-    titleDiv.appendChild(titleText);
-    titleDiv.appendChild(addButton);
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn-delete-section';
+    deleteButton.textContent = '削除';
+    deleteButton.addEventListener('click', () => deleteSection(section.id));
 
-    // タスクグリッド
+    actionsDiv.appendChild(addButton);
+    if (section.task_count == 0) { // タスクがない場合のみ削除ボタン表示
+        actionsDiv.appendChild(deleteButton);
+    }
+
+    titleDiv.appendChild(titleText);
+    titleDiv.appendChild(actionsDiv);
+
+    // タスクグリッド（ドロップゾーン対応）
     const gridDiv = document.createElement('div');
-    gridDiv.className = 'task-grid';
+    gridDiv.className = 'task-grid drop-zone';
+    gridDiv.dataset.sectionId = section.id;
+
+    // ドロップイベント設定
+    setupDropZone(gridDiv);
 
     // タスクカード作成
-    section.tasks.forEach(task => {
-        const taskCard = createTaskCard(task);
+    section.tasks.forEach((task, index) => {
+        const taskCard = createTaskCard(task, index);
         gridDiv.appendChild(taskCard);
     });
 
@@ -146,9 +174,16 @@ function createSectionElement(section) {
 /**
  * タスクカードを作成
  */
-function createTaskCard(task) {
+function createTaskCard(task, index) {
     const cardDiv = document.createElement('div');
     cardDiv.className = `task-card ${task.priority}`;
+    cardDiv.draggable = true;
+    cardDiv.dataset.taskId = task.id;
+    cardDiv.dataset.sectionId = task.section_id;
+    cardDiv.dataset.position = index;
+
+    // ドラッグイベント設定
+    setupDragEvents(cardDiv);
 
     // タスクヘッダー
     const headerDiv = document.createElement('div');
@@ -235,18 +270,95 @@ function createTaskCard(task) {
     const editBtn = document.createElement('button');
     editBtn.className = 'btn-edit';
     editBtn.textContent = '編集';
-    editBtn.addEventListener('click', () => openEditTaskModal(task));
+    editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEditTaskModal(task);
+    });
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'btn-delete';
     deleteBtn.textContent = '削除';
-    deleteBtn.addEventListener('click', () => deleteTask(task.id));
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteTask(task.id);
+    });
 
     actionsDiv.appendChild(editBtn);
     actionsDiv.appendChild(deleteBtn);
     cardDiv.appendChild(actionsDiv);
 
     return cardDiv;
+}
+
+/**
+ * ドラッグイベント設定（タスクカード用）
+ */
+function setupDragEvents(cardDiv) {
+    cardDiv.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', cardDiv.dataset.taskId);
+        cardDiv.classList.add('dragging');
+    });
+
+    cardDiv.addEventListener('dragend', function(e) {
+        cardDiv.classList.remove('dragging');
+    });
+}
+
+/**
+ * ドロップゾーン設定（セクション用）
+ */
+function setupDropZone(gridDiv) {
+    gridDiv.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        gridDiv.classList.add('drag-over');
+    });
+
+    gridDiv.addEventListener('dragleave', function(e) {
+        gridDiv.classList.remove('drag-over');
+    });
+
+    gridDiv.addEventListener('drop', function(e) {
+        e.preventDefault();
+        gridDiv.classList.remove('drag-over');
+
+        const taskId = e.dataTransfer.getData('text/plain');
+        const newSectionId = gridDiv.dataset.sectionId;
+
+        if (taskId && newSectionId) {
+            moveTaskToSection(taskId, newSectionId);
+        }
+    });
+}
+
+/**
+ * タスクをセクションに移動
+ */
+async function moveTaskToSection(taskId, newSectionId) {
+    try {
+        const response = await fetch('api/tasks.php', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                task_id: parseInt(taskId),
+                new_section_id: parseInt(newSectionId)
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // データを再読み込み
+            loadProjectData();
+        } else {
+            alert('エラー: ' + (result.error || 'タスクの移動に失敗しました'));
+        }
+
+    } catch (error) {
+        console.error('タスク移動エラー:', error);
+        alert('エラー: ' + error.message);
+    }
 }
 
 /**
@@ -339,6 +451,14 @@ function openEditTaskModal(task) {
 }
 
 /**
+ * モーダルを閉じる
+ */
+function closeModal() {
+    const modal = document.getElementById('taskModal');
+    modal.style.display = 'none';
+}
+
+/**
  * リンクアイテムを追加
  */
 function addLinkItem(name = '', url = '', linkId = null) {
@@ -375,14 +495,6 @@ function displayLinksInForm(links) {
     links.forEach(link => {
         addLinkItem(link.name, link.url, link.id);
     });
-}
-
-/**
- * モーダルを閉じる
- */
-function closeModal() {
-    const modal = document.getElementById('taskModal');
-    modal.style.display = 'none';
 }
 
 /**
@@ -534,6 +646,93 @@ async function deleteTask(taskId) {
 
     } catch (error) {
         console.error('タスク削除エラー:', error);
+        alert('エラー: ' + error.message);
+    }
+}
+
+/**
+ * セクション追加モーダルを開く
+ */
+function openAddSectionModal() {
+    const modal = document.getElementById('sectionModal');
+    const form = document.getElementById('sectionForm');
+
+    // フォームリセット
+    form.reset();
+
+    // モーダル表示
+    modal.style.display = 'block';
+}
+
+/**
+ * セクションモーダルを閉じる
+ */
+function closeSectionModal() {
+    const modal = document.getElementById('sectionModal');
+    modal.style.display = 'none';
+}
+
+/**
+ * セクションフォーム送信処理
+ */
+async function handleSectionFormSubmit(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const sectionData = Object.fromEntries(formData);
+
+    // プロジェクトIDを追加（現在は固定値1）
+    sectionData.project_id = 1;
+
+    try {
+        const response = await fetch('api/sections.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(sectionData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            closeSectionModal();
+            // データを再読み込み
+            loadProjectData();
+        } else {
+            alert('エラー: ' + (result.error || 'セクションの作成に失敗しました'));
+        }
+
+    } catch (error) {
+        console.error('セクション作成エラー:', error);
+        alert('エラー: ' + error.message);
+    }
+}
+
+/**
+ * セクション削除
+ */
+async function deleteSection(sectionId) {
+    if (!confirm('このセクションを削除しますか？（タスクがある場合は削除できません）')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`api/sections.php?id=${sectionId}`, {
+            method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // データを再読み込み
+            loadProjectData();
+        } else {
+            alert('エラー: ' + (result.error || 'セクションの削除に失敗しました'));
+        }
+
+    } catch (error) {
+        console.error('セクション削除エラー:', error);
         alert('エラー: ' + error.message);
     }
 }

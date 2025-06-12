@@ -33,6 +33,9 @@ try {
         case 'DELETE':
             deleteTask($db);
             break;
+        case 'PATCH':
+            moveTask($db);
+            break;
         default:
             http_response_code(405);
             echo json_encode(['error' => 'メソッドが許可されていません']);
@@ -149,6 +152,113 @@ function getProjectData($db) {
     }
 }
 
+/**
+ * タスク移動（ドラッグ&ドロップ用）
+ */
+function moveTask($db) {
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    if (!$input || empty($input['task_id'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'タスクIDが必要です']);
+        return;
+    }
+
+    try {
+        $db->beginTransaction();
+
+        $task_id = $input['task_id'];
+        $new_section_id = $input['new_section_id'] ?? null;
+        $new_position = $input['new_position'] ?? null;
+
+        // 現在のタスク情報を取得
+        $current_task_sql = "SELECT section_id, display_order FROM tasks WHERE id = :task_id";
+        $current_task_stmt = $db->prepare($current_task_sql);
+        $current_task_stmt->bindParam(':task_id', $task_id, PDO::PARAM_INT);
+        $current_task_stmt->execute();
+        $current_task = $current_task_stmt->fetch();
+
+        if (!$current_task) {
+            throw new Exception('タスクが見つかりません');
+        }
+
+        $old_section_id = $current_task['section_id'];
+        $old_position = $current_task['display_order'];
+
+        // セクションが変更される場合
+        if ($new_section_id && $new_section_id != $old_section_id) {
+            // 元のセクションで後続タスクの順序を詰める
+            $update_old_sql = "UPDATE tasks SET display_order = display_order - 1 WHERE section_id = :section_id AND display_order > :old_position";
+            $update_old_stmt = $db->prepare($update_old_sql);
+            $update_old_stmt->bindParam(':section_id', $old_section_id, PDO::PARAM_INT);
+            $update_old_stmt->bindParam(':old_position', $old_position, PDO::PARAM_INT);
+            $update_old_stmt->execute();
+
+            // 新しいセクションでの位置を決定
+            if ($new_position === null) {
+                // 末尾に追加
+                $max_position_sql = "SELECT COALESCE(MAX(display_order), 0) + 1 as next_position FROM tasks WHERE section_id = :section_id";
+                $max_position_stmt = $db->prepare($max_position_sql);
+                $max_position_stmt->bindParam(':section_id', $new_section_id, PDO::PARAM_INT);
+                $max_position_stmt->execute();
+                $new_position = $max_position_stmt->fetch()['next_position'];
+            } else {
+                // 指定位置に挿入（後続を後ろにずらす）
+                $update_new_sql = "UPDATE tasks SET display_order = display_order + 1 WHERE section_id = :section_id AND display_order >= :new_position";
+                $update_new_stmt = $db->prepare($update_new_sql);
+                $update_new_stmt->bindParam(':section_id', $new_section_id, PDO::PARAM_INT);
+                $update_new_stmt->bindParam(':new_position', $new_position, PDO::PARAM_INT);
+                $update_new_stmt->execute();
+            }
+
+            // タスクを新しいセクション・位置に移動
+            $move_task_sql = "UPDATE tasks SET section_id = :new_section_id, display_order = :new_position WHERE id = :task_id";
+            $move_task_stmt = $db->prepare($move_task_sql);
+            $move_task_stmt->bindParam(':new_section_id', $new_section_id, PDO::PARAM_INT);
+            $move_task_stmt->bindParam(':new_position', $new_position, PDO::PARAM_INT);
+            $move_task_stmt->bindParam(':task_id', $task_id, PDO::PARAM_INT);
+            $move_task_stmt->execute();
+
+        } elseif ($new_position !== null && $new_position != $old_position) {
+            // 同一セクション内での順序変更
+            if ($new_position < $old_position) {
+                // 前方に移動：間のタスクを後ろにずらす
+                $update_sql = "UPDATE tasks SET display_order = display_order + 1 WHERE section_id = :section_id AND display_order >= :new_position AND display_order < :old_position";
+            } else {
+                // 後方に移動：間のタスクを前にずらす
+                $update_sql = "UPDATE tasks SET display_order = display_order - 1 WHERE section_id = :section_id AND display_order > :old_position AND display_order <= :new_position";
+            }
+
+            $update_stmt = $db->prepare($update_sql);
+            $update_stmt->bindParam(':section_id', $old_section_id, PDO::PARAM_INT);
+            $update_stmt->bindParam(':new_position', $new_position, PDO::PARAM_INT);
+            $update_stmt->bindParam(':old_position', $old_position, PDO::PARAM_INT);
+            $update_stmt->execute();
+
+            // タスクを新しい位置に移動
+            $move_task_sql = "UPDATE tasks SET display_order = :new_position WHERE id = :task_id";
+            $move_task_stmt = $db->prepare($move_task_sql);
+            $move_task_stmt->bindParam(':new_position', $new_position, PDO::PARAM_INT);
+            $move_task_stmt->bindParam(':task_id', $task_id, PDO::PARAM_INT);
+            $move_task_stmt->execute();
+        }
+
+        $db->commit();
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'タスクが移動されました'
+        ]);
+
+    } catch (Exception $e) {
+        $db->rollback();
+        http_response_code(500);
+        echo json_encode([
+            'error' => 'タスク移動エラー',
+            'message' => $e->getMessage()
+        ]);
+    }
+}
 /**
  * タスク作成
  */

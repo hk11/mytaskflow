@@ -419,6 +419,76 @@
         .links-display a:hover {
             background: #d1ecf9;
         }
+
+        /* ドラッグ&ドロップ */
+        .task-card {
+            cursor: grab;
+        }
+        .task-card:active {
+            cursor: grabbing;
+        }
+        .task-card.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+        .section.drag-over {
+            background: #f0f8ff;
+            border: 2px dashed #3742fa;
+            border-radius: 8px;
+        }
+        .drop-zone {
+            min-height: 50px;
+            border: 2px dashed transparent;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .drop-zone.drag-over {
+            border-color: #3742fa;
+            background: #f0f8ff;
+        }
+
+        /* セクション管理 */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .add-section-btn {
+            background: #3742fa;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin: 20px 0;
+            transition: background 0.2s;
+        }
+        .add-section-btn:hover {
+            background: #2f32e2;
+        }
+        .btn-delete-section {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .section-header:hover .btn-delete-section {
+            opacity: 1;
+        }
+        .btn-delete-section:hover {
+            background: #ff3838;
+        }
     </style>
 </head>
 <body>
@@ -448,7 +518,36 @@
 
     <div id="loading" class="loading">データを読み込み中...</div>
     <div id="error" class="error" style="display: none;"></div>
+
+    <button class="add-section-btn" id="addSectionBtn">+ セクション追加</button>
+
     <div id="content"></div>
+
+    <!-- セクション追加モーダル -->
+    <div id="sectionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">セクション追加</h2>
+                <span class="close" id="closeSectionModal">&times;</span>
+            </div>
+            <form id="sectionForm">
+                <div class="form-group">
+                    <label class="form-label" for="sectionName">セクション名 *</label>
+                    <input type="text" id="sectionName" name="name" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="sectionIcon">アイコン</label>
+                    <input type="text" id="sectionIcon" name="icon" class="form-input" placeholder="📋" maxlength="2">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelSectionBtn">キャンセル</button>
+                    <button type="submit" class="btn-primary">作成</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- タスク編集モーダル -->
     <div id="taskModal" class="modal">

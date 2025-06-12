@@ -179,12 +179,26 @@
         .reference-link:hover {
             text-decoration: underline;
         }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #57606f;
+            font-size: 1.1em;
+        }
+        .error {
+            background: #ff4757;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Delinet開発計画書</h1>
-        <div class="subtitle">システム機能拡張・改善項目一覧</div>
+        <h1 id="project-name">MyTaskFlow</h1>
+        <div class="subtitle" id="project-description">プロジェクト管理システム</div>
     </div>
 
     <div class="priority-legend">
@@ -206,291 +220,10 @@
         </div>
     </div>
 
-    <div class="section">
-        <div class="section-title">🔄 データ変換・連携機能</div>
-        <div class="task-grid">
-            <div class="task-card separate">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">1</span>
-                        グローカルアイデータ変換
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge separate">別</span>
-                        <span class="assignee">三重野</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    グローカルアイのデータを出荷指示CSV形式に変換する機能の開発
-                </p>
-                <div class="task-notes">
-                    <a href="https://docs.google.com/spreadsheets/d/1nnzeVFm5ABtYwz9K6xhzMeIFZXJ-CXpy/edit?gid=71121907#gid=71121907" class="reference-link">参考スプレッドシート</a>
-                </div>
-            </div>
+    <div id="loading" class="loading">データを読み込み中...</div>
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="content"></div>
 
-            <div class="task-card separate">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">2</span>
-                        事業所別日計表・実績推移表
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge separate">別</span>
-                        <span class="assignee">三重野</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    本部アカウント向けの事業所別集計機能。発注期間設定・発注漏れチェック機能も含む
-                </p>
-                <div class="data-format">
-                    <strong>データ形式例:</strong><br>
-                    朝食・昼食・夕食別の食数・売上<br>
-                    期間別集計: 1-10日、1-20日、1-末日の合計
-                </div>
-                <div class="task-notes">
-                    遠藤表を参考資料として提供予定。オーダーシステム累計の詳細確認が必要
-                </div>
-            </div>
-
-            <div class="task-card separate">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">3</span>
-                        1pc1人前自動計算＆発注
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge separate">別</span>
-                        <span class="assignee">三重野</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    個人単位での自動計算および発注システムの実装
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">🛒 発注・数量管理機能</div>
-        <div class="task-grid">
-            <div class="task-card medium">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">4</span>
-                        パック数での数量変更機能
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge medium">！02</span>
-                        <span class="assignee">松永</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    食数変更に加えて、パック単位での数量変更方法を追加
-                </p>
-                <div class="task-notes">
-                    <strong>課題:</strong> 味噌・塩など消費しきらない食材での計算矛盾<br>
-                    <strong>検討案:</strong> パックの場合は合計金額のみ計算、または食数一本での運用
-                </div>
-            </div>
-
-            <div class="task-card medium">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">5</span>
-                        日毎食数変更の発注反映
-                    </h3>
-                    <div class="task-meta">
-                        <span class="status-completed">実装済み</span>
-                        <span class="assignee">松永</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    日別の食数変更を発注数量に自動反映する機能
-                </p>
-            </div>
-
-            <div class="task-card high">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">6</span>
-                        調味料・個別発注機能
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge high">！01</span>
-                        <span class="assignee">松永</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    調味料などの個別発注方法の実装。使用日による価格変動対応
-                </p>
-                <div class="task-notes">
-                    <strong>実装方針:</strong> 単品発注商品テーブル追加、表示商品コードのみ登録<br>
-                    消費月の価格は倉庫食材・完全調理品テーブルを参照
-                </div>
-            </div>
-
-            <div class="task-card medium">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">7</span>
-                        注文確定後の数量変更
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge medium">！02</span>
-                        <span class="assignee">松永</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    確定済み注文の数量変更機能。カートに一旦返す形式で実装
-                </p>
-            </div>
-
-            <div class="task-card medium">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">9</span>
-                        カート内一括発注ボタン
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge medium">！02</span>
-                        <span class="assignee">松永</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    カート内商品の一括発注機能。自動計算タイミングの改善
-                </p>
-                <div class="task-notes">
-                    <strong>検討事項:</strong> カートに残すチェックボックス、画面上部への操作説明記載
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">📊 履歴・レポート機能</div>
-        <div class="task-grid">
-            <div class="task-card low">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">8</span>
-                        帳票印刷機能
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge low">劣</span>
-                        <span class="assignee">松永</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    納品書・発注履歴等の印刷機能。行政対応で必要
-                </p>
-                <div class="task-notes">
-                    現在は調理指示書への手書きで運用中のため優先度低
-                </div>
-            </div>
-
-            <div class="task-card medium">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">10</span>
-                        カレンダータグ付発注履歴
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge medium">！02</span>
-                        <span class="assignee">松永</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    朝食・昼食・夕食タグ付きカレンダーからの発注履歴確認機能
-                </p>
-                <div class="task-notes">
-                    あったらいいな程度の優先度
-                </div>
-            </div>
-
-            <div class="task-card medium">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">14</span>
-                        発注完了状態の視覚化
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge medium">！02</span>
-                        <span class="assignee">遠藤</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    発注完了した項目の色分け表示。エラー表示機能も含む
-                </p>
-                <div class="task-notes">
-                    カレンダータグ機能（項目10）があれば十分な可能性
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">⚙️ システム管理・自動化</div>
-        <div class="task-grid">
-            <div class="task-card high">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">11</span>
-                        注文データ自動送信
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge high">！01</span>
-                        <span class="assignee">久保</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    発注締切の後倒し対応。自動メール送信機能の実装
-                </p>
-                <div class="task-notes">
-                    <strong>技術要件:</strong> Mail機能のcron設定、宛先管理<br>
-                    <strong>主目的:</strong> 中一日間隔の短縮（メール自動送信は手段）<br>
-                    delivery_scheduleでMCS締切日調整が必要
-                </div>
-            </div>
-
-            <div class="task-card high">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">12</span>
-                        メンテナンスモード
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge high">！01</span>
-                        <span class="assignee">久保</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    システムメンテナンス時のユーザアクセス制御機能
-                </p>
-                <div class="task-notes">
-                    ユーザ操作と連動するため、！02機能との同梱が望ましい
-                </div>
-            </div>
-
-            <div class="task-card separate">
-                <div class="task-header">
-                    <h3 class="task-title">
-                        <span class="task-number">13</span>
-                        お知らせ機能
-                    </h3>
-                    <div class="task-meta">
-                        <span class="priority-badge separate">別</span>
-                        <span class="assignee">久保</span>
-                    </div>
-                </div>
-                <p class="task-description">
-                    メール・ポータル配信頻度削減のためのお知らせ機能
-                </p>
-                <div class="task-notes">
-                    <strong>スケジュール:</strong> 8月更新予定<br>
-                    <strong>要件:</strong> 添付ファイル機能必須
-                </div>
-            </div>
-        </div>
-    </div>
+    <script src="js/main.js"></script>
 </body>
 </html>

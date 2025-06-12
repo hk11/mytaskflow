@@ -2,10 +2,41 @@
  * MyTaskFlow メインJavaScript
  */
 
+// グローバル変数
+let currentProjectData = null;
+
 // DOM読み込み完了時に実行
 document.addEventListener('DOMContentLoaded', function() {
     loadProjectData();
+    initializeModalEvents();
 });
+
+/**
+ * モーダル関連のイベント初期化
+ */
+function initializeModalEvents() {
+    const modal = document.getElementById('taskModal');
+    const closeBtn = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const taskForm = document.getElementById('taskForm');
+
+    // モーダルを閉じる
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    // モーダル外クリックで閉じる
+    window.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    // フォーム送信
+    taskForm.addEventListener('submit', handleFormSubmit);
+
+    // リンク追加ボタン
+    document.getElementById('addLinkBtn').addEventListener('click', addLinkItem);
+}
 
 /**
  * プロジェクトデータを読み込み
@@ -39,6 +70,9 @@ async function loadProjectData(projectId = 1) {
 
         // データを表示
         displayProjectData(data);
+
+        // グローバル変数に保存
+        currentProjectData = data;
 
     } catch (error) {
         console.error('データ読み込みエラー:', error);
@@ -78,7 +112,20 @@ function createSectionElement(section) {
     // セクションタイトル
     const titleDiv = document.createElement('div');
     titleDiv.className = 'section-title';
-    titleDiv.textContent = `${section.icon} ${section.name}`;
+    titleDiv.style.display = 'flex';
+    titleDiv.style.justifyContent = 'space-between';
+    titleDiv.style.alignItems = 'center';
+
+    const titleText = document.createElement('span');
+    titleText.textContent = `${section.icon} ${section.name}`;
+
+    const addButton = document.createElement('button');
+    addButton.className = 'add-task-btn';
+    addButton.textContent = '+ タスク追加';
+    addButton.addEventListener('click', () => openAddTaskModal(section.id));
+
+    titleDiv.appendChild(titleText);
+    titleDiv.appendChild(addButton);
 
     // タスクグリッド
     const gridDiv = document.createElement('div');
@@ -159,18 +206,45 @@ function createTaskCard(task) {
     // 備考がある場合
     if (task.notes) {
         const notesDiv = document.createElement('div');
-        notesDiv.className = 'task-notes';
+        notesDiv.className = 'task-notes clickable-links';
         notesDiv.innerHTML = formatNotes(task.notes);
         cardDiv.appendChild(notesDiv);
     }
 
     // 参考リンクがある場合
-    if (task.reference_url) {
-        const linkDiv = document.createElement('div');
-        linkDiv.className = 'task-notes';
-        linkDiv.innerHTML = `<a href="${task.reference_url}" class="reference-link" target="_blank">参考スプレッドシート</a>`;
-        cardDiv.appendChild(linkDiv);
+    if (task.links && task.links.length > 0) {
+        const linksDiv = document.createElement('div');
+        linksDiv.className = 'links-display';
+
+        task.links.forEach(link => {
+            const linkElement = document.createElement('a');
+            linkElement.href = link.url;
+            linkElement.textContent = link.name;
+            linkElement.target = '_blank';
+            linkElement.rel = 'noopener noreferrer';
+            linksDiv.appendChild(linkElement);
+        });
+
+        cardDiv.appendChild(linksDiv);
     }
+
+    // タスク操作ボタン
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'task-actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-edit';
+    editBtn.textContent = '編集';
+    editBtn.addEventListener('click', () => openEditTaskModal(task));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-delete';
+    deleteBtn.textContent = '削除';
+    deleteBtn.addEventListener('click', () => deleteTask(task.id));
+
+    actionsDiv.appendChild(editBtn);
+    actionsDiv.appendChild(deleteBtn);
+    cardDiv.appendChild(actionsDiv);
 
     return cardDiv;
 }
@@ -200,7 +274,268 @@ function formatNotes(notes) {
     // **太字**を<strong>タグに変換
     formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
+    // URLを自動リンクに変換
+    formatted = formatLinksInText(formatted);
+
     return formatted;
+}
+
+/**
+ * テキスト内のURLを自動でリンクに変換
+ */
+function formatLinksInText(text) {
+    const urlRegex = /(https?:\/\/[^\s<>"]+)/gi;
+    return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+
+/**
+ * モーダルを開く（タスク追加）
+ */
+function openAddTaskModal(sectionId) {
+    const modal = document.getElementById('taskModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const form = document.getElementById('taskForm');
+
+    // タイトル設定
+    modalTitle.textContent = 'タスク追加';
+
+    // フォームリセット
+    form.reset();
+    document.getElementById('taskId').value = '';
+    document.getElementById('sectionId').value = sectionId;
+
+    // リンクリストもクリア
+    displayLinksInForm([]);
+
+    // モーダル表示
+    modal.style.display = 'block';
+}
+
+/**
+ * モーダルを開く（タスク編集）
+ */
+function openEditTaskModal(task) {
+    const modal = document.getElementById('taskModal');
+    const modalTitle = document.getElementById('modalTitle');
+
+    // タイトル設定
+    modalTitle.textContent = 'タスク編集';
+
+    // フォームに値設定
+    document.getElementById('taskId').value = task.id;
+    document.getElementById('sectionId').value = task.section_id;
+    document.getElementById('taskTitle').value = task.title || '';
+    document.getElementById('taskDescription').value = task.description || '';
+    document.getElementById('taskNotes').value = task.notes || '';
+    document.getElementById('taskAssignee').value = task.assignee || '';
+    document.getElementById('taskPriority').value = task.priority || 'medium';
+    document.getElementById('taskStatus').value = task.status || 'pending';
+
+    // リンク表示
+    displayLinksInForm(task.links || []);
+
+    // モーダル表示
+    modal.style.display = 'block';
+}
+
+/**
+ * リンクアイテムを追加
+ */
+function addLinkItem(name = '', url = '', linkId = null) {
+    const linksList = document.getElementById('linksList');
+
+    const linkItem = document.createElement('div');
+    linkItem.className = 'link-item';
+    linkItem.innerHTML = `
+        <input type="text" class="link-name" placeholder="リンク名" value="${name}">
+        <input type="url" class="link-url" placeholder="https://..." value="${url}">
+        <button type="button" class="link-remove">削除</button>
+    `;
+
+    // データ属性でリンクIDを保存（編集時用）
+    if (linkId) {
+        linkItem.dataset.linkId = linkId;
+    }
+
+    // 削除ボタンのイベント
+    linkItem.querySelector('.link-remove').addEventListener('click', function() {
+        linkItem.remove();
+    });
+
+    linksList.appendChild(linkItem);
+}
+
+/**
+ * フォームにリンクを表示
+ */
+function displayLinksInForm(links) {
+    const linksList = document.getElementById('linksList');
+    linksList.innerHTML = '';
+
+    links.forEach(link => {
+        addLinkItem(link.name, link.url, link.id);
+    });
+}
+
+/**
+ * モーダルを閉じる
+ */
+function closeModal() {
+    const modal = document.getElementById('taskModal');
+    modal.style.display = 'none';
+}
+
+/**
+ * フォーム送信処理
+ */
+async function handleFormSubmit(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const taskData = Object.fromEntries(formData);
+
+    // 空の値を除去
+    Object.keys(taskData).forEach(key => {
+        if (taskData[key] === '') {
+            delete taskData[key];
+        }
+    });
+
+    const isEdit = taskData.id && taskData.id !== '';
+
+    try {
+        // タスクを保存
+        const response = await fetch('api/tasks.php', {
+            method: isEdit ? 'PUT' : 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(taskData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // リンクも保存
+            await saveTaskLinks(isEdit ? taskData.id : result.task_id);
+
+            closeModal();
+            // データを再読み込み
+            loadProjectData();
+        } else {
+            alert('エラー: ' + (result.error || 'タスクの保存に失敗しました'));
+        }
+
+    } catch (error) {
+        console.error('タスク保存エラー:', error);
+        alert('エラー: ' + error.message);
+    }
+}
+
+/**
+ * タスクのリンクを保存
+ */
+async function saveTaskLinks(taskId) {
+    const linkItems = document.querySelectorAll('#linksList .link-item');
+
+    // 既存のリンクをすべて削除してから新しく作成
+    // （簡単な実装として、編集時は一旦全削除して再作成）
+    if (document.getElementById('taskId').value) {
+        // 編集時：既存リンクを削除
+        await deleteAllTaskLinks(taskId);
+    }
+
+    // 新しいリンクを作成
+    for (const linkItem of linkItems) {
+        const nameInput = linkItem.querySelector('.link-name');
+        const urlInput = linkItem.querySelector('.link-url');
+
+        const name = nameInput.value.trim();
+        const url = urlInput.value.trim();
+
+        if (name && url) {
+            await createLink('task', taskId, name, url);
+        }
+    }
+}
+
+/**
+ * タスクの全リンクを削除
+ */
+async function deleteAllTaskLinks(taskId) {
+    try {
+        // まず既存のリンクを取得
+        const response = await fetch(`api/links.php?linkable_type=task&linkable_id=${taskId}`);
+        const data = await response.json();
+
+        if (data.success && data.links) {
+            // 各リンクを削除
+            for (const link of data.links) {
+                await fetch(`api/links.php?id=${link.id}`, {
+                    method: 'DELETE'
+                });
+            }
+        }
+    } catch (error) {
+        console.error('リンク削除エラー:', error);
+    }
+}
+
+/**
+ * リンクを作成
+ */
+async function createLink(linkableType, linkableId, name, url) {
+    try {
+        const response = await fetch('api/links.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                linkable_type: linkableType,
+                linkable_id: linkableId,
+                name: name,
+                url: url
+            })
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            console.error('リンク作成エラー:', result.error);
+        }
+
+    } catch (error) {
+        console.error('リンク作成エラー:', error);
+    }
+}
+
+/**
+ * タスク削除
+ */
+async function deleteTask(taskId) {
+    if (!confirm('このタスクを削除しますか？')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`api/tasks.php?id=${taskId}`, {
+            method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // データを再読み込み
+            loadProjectData();
+        } else {
+            alert('エラー: ' + (result.error || 'タスクの削除に失敗しました'));
+        }
+
+    } catch (error) {
+        console.error('タスク削除エラー:', error);
+        alert('エラー: ' + error.message);
+    }
 }
 
 /**

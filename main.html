@@ -193,6 +193,232 @@
             margin: 20px 0;
             text-align: center;
         }
+
+        /* タスク管理ボタン */
+        .add-task-btn {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+            transition: background 0.2s;
+        }
+        .add-task-btn:hover {
+            background: #26de81;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .task-card:hover .task-actions {
+            opacity: 1;
+        }
+
+        .btn-edit, .btn-delete {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background 0.2s;
+        }
+        .btn-edit {
+            background: #3742fa;
+            color: white;
+        }
+        .btn-edit:hover {
+            background: #2f32e2;
+        }
+        .btn-delete {
+            background: #ff4757;
+            color: white;
+        }
+        .btn-delete:hover {
+            background: #ff3838;
+        }
+
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2f3640;
+            margin: 0;
+        }
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close:hover {
+            color: #333;
+        }
+
+        /* フォーム */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #2f3640;
+        }
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+            box-sizing: border-box;
+        }
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+            resize: vertical;
+            min-height: 80px;
+            box-sizing: border-box;
+        }
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+            box-sizing: border-box;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .btn-primary {
+            background: #3742fa;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .btn-primary:hover {
+            background: #2f32e2;
+        }
+        .btn-secondary {
+            background: #f1f2f6;
+            color: #2f3640;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .btn-secondary:hover {
+            background: #ddd;
+        }
+
+        .clickable-links a {
+            color: #3742fa;
+            text-decoration: none;
+        }
+        .clickable-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* リンク管理 */
+        .link-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .link-item input {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .link-item .link-name {
+            width: 120px;
+            flex: none;
+        }
+        .link-item .link-url {
+            flex: 2;
+        }
+        .link-remove {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .link-remove:hover {
+            background: #ff3838;
+        }
+        .links-display {
+            margin-top: 10px;
+        }
+        .links-display a {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 5px;
+            padding: 4px 8px;
+            background: #e8f4fd;
+            color: #3742fa;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        .links-display a:hover {
+            background: #d1ecf9;
+        }
     </style>
 </head>
 <body>
@@ -223,6 +449,71 @@
     <div id="loading" class="loading">データを読み込み中...</div>
     <div id="error" class="error" style="display: none;"></div>
     <div id="content"></div>
+
+    <!-- タスク編集モーダル -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">タスク追加</h2>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <form id="taskForm">
+                <input type="hidden" id="taskId" name="id">
+                <input type="hidden" id="sectionId" name="section_id">
+
+                <div class="form-group">
+                    <label class="form-label" for="taskTitle">タスクタイトル *</label>
+                    <input type="text" id="taskTitle" name="title" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskDescription">説明</label>
+                    <textarea id="taskDescription" name="description" class="form-textarea"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskNotes">備考・ノート</label>
+                    <textarea id="taskNotes" name="notes" class="form-textarea" placeholder="**太字**で強調可能。URLを記載すると自動でリンクになります。"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">リンク</label>
+                    <div id="linksList"></div>
+                    <button type="button" class="btn-secondary" id="addLinkBtn">+ リンク追加</button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskAssignee">担当者</label>
+                    <input type="text" id="taskAssignee" name="assignee" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskPriority">優先度</label>
+                    <select id="taskPriority" name="priority" class="form-select">
+                        <option value="high">最優先（！01）</option>
+                        <option value="medium" selected>高優先（！02）</option>
+                        <option value="low">低優先（劣）</option>
+                        <option value="separate">別プロジェクト（別）</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskStatus">ステータス</label>
+                    <select id="taskStatus" name="status" class="form-select">
+                        <option value="pending" selected>未着手</option>
+                        <option value="in_progress">進行中</option>
+                        <option value="completed">完了</option>
+                        <option value="on_hold">保留</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelBtn">キャンセル</button>
+                    <button type="submit" class="btn-primary" id="saveBtn">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="js/main.js"></script>
 </body>

@@ -330,9 +330,6 @@ $stmt->execute([
     ':display_order' => $next_order
 ]);
 
-
-        $stmt->execute();
-
         $task_id = $db->lastInsertId();
 
         echo json_encode([
@@ -514,26 +511,4 @@ function deleteTask($db) {
             'message' => $e->getMessage()
         ]);
     }
-}
-function getPriorityLabel($priority) {
-    $labels = [
-        'high' => '！01',
-        'medium' => '！02',
-        'low' => '劣',
-        'separate' => '別'
-    ];
-    return $labels[$priority] ?? $priority;
-}
-
-/**
- * ステータスの日本語表示名取得
- */
-function getStatusLabel($status) {
-    $labels = [
-        'pending' => '未着手',
-        'in_progress' => '進行中',
-        'completed' => '完了',
-        'on_hold' => '保留'
-    ];
-    return $labels[$status] ?? $status;
 }

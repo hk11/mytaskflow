@@ -218,20 +218,17 @@ function createTaskCard(task, index) {
     const metaDiv = document.createElement('div');
     metaDiv.className = 'task-meta';
 
-    // 優先度バッジ
+    // 優先度バッジ（常に表示）
     const prioritySpan = document.createElement('span');
     prioritySpan.className = `priority-badge ${task.priority}`;
     prioritySpan.textContent = getPriorityLabel(task.priority);
+    metaDiv.appendChild(prioritySpan);
 
-    // ステータスバッジ（完了時のみ表示）
-    if (task.status === 'completed') {
-        const statusSpan = document.createElement('span');
-        statusSpan.className = 'status-completed';
-        statusSpan.textContent = '実装済み';
-        metaDiv.appendChild(statusSpan);
-    } else {
-        metaDiv.appendChild(prioritySpan);
-    }
+    // ステータスバッジ（常に表示）
+    const statusSpan = document.createElement('span');
+    statusSpan.className = `status-badge ${task.status}`;
+    statusSpan.textContent = getStatusLabel(task.status);
+    metaDiv.appendChild(statusSpan);
 
     // 担当者
     if (task.assignee) {
@@ -302,6 +299,18 @@ function createTaskCard(task, index) {
     cardDiv.appendChild(actionsDiv);
 
     return cardDiv;
+}
+/**
+ * ステータスラベル取得
+ */
+function getStatusLabel(status) {
+    const labels = {
+        'pending': '未着手',
+        'in_progress': '進行中',
+        'completed': '完了',
+        'on_hold': '保留'
+    };
+    return labels[status] || status;
 }
 
 /**
@@ -436,27 +445,31 @@ async function moveTaskToSection(taskId, newSectionId) {
  */
 function getPriorityLabel(priority) {
     const labels = {
-        'high': '！01',
-        'medium': '！02',
-        'low': '劣',
-        'separate': '別'
+        'high': '高',
+        'medium': '中',
+        'low': '低',
+        'separate': '保'
     };
     return labels[priority] || priority;
 }
-
 /**
  * 備考テキストのフォーマット
  */
 function formatNotes(notes) {
     if (!notes) return '';
 
-    // 改行をHTMLの改行に変換
-    let formatted = notes.replace(/\n/g, '<br>');
+    // 1. 見出し変換を最初に実行（改行変換前）
+    let formatted = notes.replace(/^### ([^<\n]+)/gm, '<h3 class="note-h3">$1</h3>');
+    formatted = formatted.replace(/^## ([^<\n]+)/gm, '<h2 class="note-h2">$1</h2>');
+    formatted = formatted.replace(/^# ([^<\n]+)/gm, '<h1 class="note-h1">$1</h1>');
 
-    // **太字**を<strong>タグに変換
+    // 2. **太字**を<strong>タグに変換
     formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-    // URLを自動リンクに変換
+    // 3. 改行をHTMLの改行に変換（最後に実行）
+    formatted = formatted.replace(/\n/g, '<br>');
+
+    // 4. URLを自動リンクに変換
     formatted = formatLinksInText(formatted);
 
     return formatted;
@@ -572,6 +585,8 @@ function displayLinksInForm(links) {
  */
 async function handleFormSubmit(e) {
     e.preventDefault();
+
+    console.log('フォーム送信開始'); // この行を追加
 
     const formData = new FormData(e.target);
     const taskData = Object.fromEntries(formData);

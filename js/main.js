@@ -4,11 +4,18 @@
 
 // グローバル変数
 let currentProjectData = null;
+let autoScrollInterval = null;
+let isDragging = false;
+let isEventInitialized = false;
 
 // DOM読み込み完了時に実行
 document.addEventListener('DOMContentLoaded', function() {
     loadProjectData();
-    initializeModalEvents();
+     // イベントリスナーは1回だけ初期化
+    if (!isEventInitialized) {
+        initializeModalEvents();
+        isEventInitialized = true;
+    }
 });
 
 /**
@@ -49,6 +56,13 @@ function initializeModalEvents() {
 
     // リンク追加ボタン
     document.getElementById('addLinkBtn').addEventListener('click', addLinkItem);
+
+    // 自動スクロール用のマウス移動イベント
+    document.addEventListener('dragover', handleAutoScroll);
+
+    // 表示切り替えボタン
+document.getElementById('cardViewBtn').addEventListener('click', () => switchView('card'));
+document.getElementById('listViewBtn').addEventListener('click', () => switchView('list'));
 }
 
 /**
@@ -297,29 +311,36 @@ function setupDragEvents(cardDiv) {
     cardDiv.addEventListener('dragstart', function(e) {
         e.dataTransfer.setData('text/plain', cardDiv.dataset.taskId);
         cardDiv.classList.add('dragging');
+        isDragging = true;
     });
 
     cardDiv.addEventListener('dragend', function(e) {
         cardDiv.classList.remove('dragging');
+        isDragging = false;
+        stopAutoScroll();
     });
 }
 
 /**
  * ドロップゾーン設定（セクション用）
  */
-/*
 function setupDropZone(gridDiv) {
     gridDiv.addEventListener('dragover', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         gridDiv.classList.add('drag-over');
     });
 
     gridDiv.addEventListener('dragleave', function(e) {
-        gridDiv.classList.remove('drag-over');
+        // 子要素への移動では dragleave しない
+        if (!gridDiv.contains(e.relatedTarget)) {
+            gridDiv.classList.remove('drag-over');
+        }
     });
 
     gridDiv.addEventListener('drop', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         gridDiv.classList.remove('drag-over');
 
         const taskId = e.dataTransfer.getData('text/plain');
@@ -330,29 +351,53 @@ function setupDropZone(gridDiv) {
         }
     });
 }
-*/
 
-function setupDropZone(gridDiv) {
-    gridDiv.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        gridDiv.classList.add('drag-over');
-    });
+/**
+ * 自動スクロール機能を開始
+ */
+function startAutoScroll(direction, speed = 5) {
+    if (autoScrollInterval) return;
 
-    gridDiv.addEventListener('dragleave', function(e) {
-        gridDiv.classList.remove('drag-over');
-    });
-
-    gridDiv.addEventListener('drop', function(e) {
-        e.preventDefault();
-        gridDiv.classList.remove('drag-over');
-
-        const taskId = e.dataTransfer.getData('text/plain');
-        const newSectionId = gridDiv.dataset.sectionId;
-
-        if (taskId && newSectionId) {
-            moveTaskToSection(taskId, newSectionId);
+    autoScrollInterval = setInterval(() => {
+        if (direction === 'up') {
+            window.scrollBy(0, -speed);
+        } else if (direction === 'down') {
+            window.scrollBy(0, speed);
         }
-    });
+    }, 16); // 60fps
+}
+
+/**
+ * 自動スクロールを停止
+ */
+function stopAutoScroll() {
+    if (autoScrollInterval) {
+        clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
+    }
+}
+
+/**
+ * マウス位置による自動スクロール判定
+ */
+function handleAutoScroll(e) {
+    if (!isDragging) return;
+
+    const scrollThreshold = 100; // 画面端から100px以内
+    const viewportHeight = window.innerHeight;
+    const mouseY = e.clientY;
+
+    stopAutoScroll();
+
+    if (mouseY < scrollThreshold) {
+        // 上端に近い場合は上にスクロール
+        const speed = Math.max(5, (scrollThreshold - mouseY) / 5);
+        startAutoScroll('up', speed);
+    } else if (mouseY > viewportHeight - scrollThreshold) {
+        // 下端に近い場合は下にスクロール
+        const speed = Math.max(5, (mouseY - (viewportHeight - scrollThreshold)) / 5);
+        startAutoScroll('down', speed);
+    }
 }
 
 /**
@@ -770,4 +815,41 @@ window.addEventListener('error', function(e) {
     const errorElement = document.getElementById('error');
     errorElement.style.display = 'block';
     errorElement.textContent = 'JavaScriptエラーが発生しました。コンソールを確認してください。';
+});
+
+/**
+ * 表示モード切り替え
+ */
+function switchView(viewMode) {
+    const content = document.getElementById('content');
+    const cardBtn = document.getElementById('cardViewBtn');
+    const listBtn = document.getElementById('listViewBtn');
+
+    if (viewMode === 'list') {
+        content.classList.add('list-view');
+        cardBtn.classList.remove('active');
+        listBtn.classList.add('active');
+    } else {
+        content.classList.remove('list-view');
+        listBtn.classList.remove('active');
+        cardBtn.classList.add('active');
+    }
+
+    // 設定を保存
+    localStorage.setItem('taskViewMode', viewMode);
+}
+
+/**
+ * 保存された表示モードを復元
+ */
+function restoreViewMode() {
+    const savedMode = localStorage.getItem('taskViewMode') || 'card';
+    switchView(savedMode);
+}
+
+// ページ読み込み時に表示モードを復元
+document.addEventListener('DOMContentLoaded', function() {
+    loadProjectData();
+    initializeModalEvents();
+    restoreViewMode(); // この行を追加
 });

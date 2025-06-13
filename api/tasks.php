@@ -296,6 +296,7 @@ function createTask($db) {
         $display_order_stmt->execute();
         $next_order = $display_order_stmt->fetch()['next_order'];
 
+/*
         // タスク挿入
         $sql = "INSERT INTO tasks (task_number, title, description, notes, assignee, priority, status, section_id, display_order)
                 VALUES (:task_number, :title, :description, :notes, :assignee, :priority, :status, :section_id, :display_order)";
@@ -310,6 +311,25 @@ function createTask($db) {
         $stmt->bindParam(':status', $input['status'] ?? 'pending');
         $stmt->bindParam(':section_id', $input['section_id'], PDO::PARAM_INT);
         $stmt->bindParam(':display_order', $next_order, PDO::PARAM_INT);
+        */
+
+        // タスク挿入
+$sql = "INSERT INTO tasks (task_number, title, description, notes, assignee, priority, status, section_id, display_order)
+        VALUES (:task_number, :title, :description, :notes, :assignee, :priority, :status, :section_id, :display_order)";
+
+$stmt = $db->prepare($sql);
+$stmt->execute([
+    ':task_number' => $next_number,
+    ':title' => $input['title'],
+    ':description' => $input['description'] ?? '',
+    ':notes' => $input['notes'] ?? '',
+    ':assignee' => $input['assignee'] ?? '',
+    ':priority' => $input['priority'] ?? 'medium',
+    ':status' => $input['status'] ?? 'pending',
+    ':section_id' => $input['section_id'],
+    ':display_order' => $next_order
+]);
+
 
         $stmt->execute();
 
@@ -333,6 +353,65 @@ function createTask($db) {
 /**
  * タスク更新
  */
+/**
+ * タスク更新
+ */
+function updateTask($db) {
+    $input = json_decode(file_get_contents('php://input'), true);
+
+    if (!$input || empty($input['id'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'タスクIDが必要です']);
+        return;
+    }
+
+    try {
+        // タスク存在確認
+        $check_sql = "SELECT id FROM tasks WHERE id = :id";
+        $check_stmt = $db->prepare($check_sql);
+        $check_stmt->execute([':id' => $input['id']]);
+
+        if (!$check_stmt->fetch()) {
+            http_response_code(404);
+            echo json_encode(['error' => 'タスクが見つかりません']);
+            return;
+        }
+
+        // 全フィールドを更新（シンプル方式）
+        $sql = "UPDATE tasks SET
+                title = :title,
+                description = :description,
+                notes = :notes,
+                assignee = :assignee,
+                priority = :priority,
+                status = :status
+                WHERE id = :id";
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute([
+            ':id' => $input['id'],
+            ':title' => $input['title'] ?? '',
+            ':description' => $input['description'] ?? '',
+            ':notes' => $input['notes'] ?? '',
+            ':assignee' => $input['assignee'] ?? '',
+            ':priority' => $input['priority'] ?? 'medium',
+            ':status' => $input['status'] ?? 'pending'
+        ]);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'タスクが更新されました'
+        ]);
+
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode([
+            'error' => 'データベースエラー',
+            'message' => $e->getMessage()
+        ]);
+    }
+}
+/*
 function updateTask($db) {
     $input = json_decode(file_get_contents('php://input'), true);
 
@@ -391,7 +470,7 @@ function updateTask($db) {
         ]);
     }
 }
-
+*/
 /**
  * タスク削除
  */

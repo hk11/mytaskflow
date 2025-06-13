@@ -17,148 +17,312 @@
     --accent-red: #ff4757;
     --accent-gray: #747d8c;
 }
+
+/* ========== 基本スタイル ========== */
 body {
-            font-family: 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
-            line-height: 1.6;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            background: #fafafa;
-            color: #333;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 2.2em;
-            font-weight: 600;
-        }
-        .header .subtitle {
-            margin: 8px 0 0 0;
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        .priority-legend {
-            display: flex;
-            gap: 20px;
-            margin: 20px 0;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .priority-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9em;
-        }
-        .priority-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-        .priority-high { background: #ff4757; }
-        .priority-medium { background: #ffa502; }
-        .priority-low { background: #2ed573; }
-        .priority-separate { background: #747d8c; }
+    font-family: 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
+    line-height: 1.6;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: #fafafa;
+    color: #333;
+}
 
-        .section {
-            margin-bottom: 30px;
-        }
-        .section-title {
-            background: #2f3640;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            font-size: 1.3em;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        .task-grid {
-            display: grid;
-            gap: 20px;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        }
-        .task-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border-left: 4px solid;
-        }
-        .task-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 25px rgba(0,0,0,0.12);
-        }
-        .task-card.high { border-left-color: #ff4757; }
-        .task-card.medium { border-left-color: #ffa502; }
-        .task-card.low { border-left-color: #2ed573; }
-        .task-card.separate { border-left-color: #747d8c; }
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
 
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-        .task-title {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #2f3640;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .task-number {
-            background: #3742fa;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 600;
-            min-width: 20px;
-            text-align: center;
-        }
-        .task-meta {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .priority-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 500;
-            color: white;
-        }
-        .priority-badge.high { background: #ff4757; }
-        .priority-badge.medium { background: #ffa502; }
-        .priority-badge.low { background: #2ed573; }
-        .priority-badge.separate { background: #747d8c; }
+.header h1 {
+    margin: 0;
+    font-size: 2.2em;
+    font-weight: 600;
+}
 
-        .assignee {
-            background: #f1f2f6;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            color: #2f3640;
-            font-weight: 500;
-        }
-        .task-description {
-            color: var(--text-primary);
-            margin: 0;
-            line-height: 1.5;
-        }
-        .task-notes {
+.header .subtitle {
+    margin: 8px 0 0 0;
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+.btn-back {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    transition: background 0.2s;
+    display: inline-block;
+}
+
+.btn-back:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #57606f;
+    font-size: 1.1em;
+}
+
+.error {
+    background: #ff4757;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* ========== 優先度関連 ========== */
+.priority-legend {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.priority-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+
+.priority-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.priority-high { background: #ff4757; }
+.priority-medium { background: #ffa502; }
+.priority-low { background: #2ed573; }
+.priority-separate { background: #747d8c; }
+
+.priority-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 500;
+    color: white;
+}
+
+.priority-badge.high { background: #ff4757; }
+.priority-badge.medium { background: #ffa502; }
+.priority-badge.low { background: #2ed573; }
+.priority-badge.separate { background: #747d8c; }
+
+/* ========== ステータス関連 ========== */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 500;
+    color: white;
+}
+
+.status-badge.pending { background: #95a5a6; }
+.status-badge.in_progress { background: #f39c12; }
+.status-badge.completed { background: #2ed573; }
+.status-badge.on_hold { background: #e74c3c; }
+
+.status-completed {
+    background: #2ed573;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+/* ========== コントロール部分 ========== */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 5px;
+}
+
+.toggle-btn {
+    background: #f1f2f6;
+    color: #2f3640;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+    background: #ddd;
+}
+
+.toggle-btn.active {
+    background: #3742fa;
+    color: white;
+}
+
+/* ========== セクション関連 ========== */
+.section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    background: #2f3640;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-size: 1.3em;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.add-section-btn {
+    background: #3742fa;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin: 20px 0;
+    transition: background 0.2s;
+}
+
+.add-section-btn:hover {
+    background: #2f32e2;
+}
+
+.btn-delete-section {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.section-header:hover .btn-delete-section {
+    opacity: 1;
+}
+
+.btn-delete-section:hover {
+    background: #ff3838;
+}
+
+/* ========== タスク関連 ========== */
+.task-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+.task-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-left: 4px solid;
+    cursor: grab;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 25px rgba(0,0,0,0.12);
+}
+
+.task-card:active {
+    cursor: grabbing;
+}
+
+.task-card.high { border-left-color: #ff4757; }
+.task-card.medium { border-left-color: #ffa502; }
+.task-card.low { border-left-color: #2ed573; }
+.task-card.separate { border-left-color: #747d8c; }
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.task-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #2f3640;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.task-number {
+    background: #3742fa;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.task-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.assignee {
+    background: #f1f2f6;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    color: #2f3640;
+    font-weight: 500;
+}
+
+.task-description {
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.task-notes {
     margin-top: 10px;
     padding: 10px;
     background: #f8f9fa;
@@ -179,444 +343,7 @@ body {
     width: fit-content;
     margin-bottom: 8px;
 }
-        .status-completed {
-            background: #2ed573;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 500;
-        }
-        .data-format {
-            background: #ecf0f1;
-            border-radius: 6px;
-            padding: 10px;
-            margin: 10px 0;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            color: #2c3e50;
-        }
-        .reference-link {
-            color: #3742fa;
-            text-decoration: none;
-            font-size: 0.9em;
-        }
-        .reference-link:hover {
-            text-decoration: underline;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #57606f;
-            font-size: 1.1em;
-        }
-        .error {
-            background: #ff4757;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
 
-        /* タスク管理ボタン */
-        .add-task-btn {
-            background: #2ed573;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            margin-left: 10px;
-            transition: background 0.2s;
-        }
-        .add-task-btn:hover {
-            background: #26de81;
-        }
-
-        .task-actions {
-            display: flex;
-            gap: 5px;
-            margin-top: 10px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .task-card:hover .task-actions {
-            opacity: 1;
-        }
-
-        .btn-edit, .btn-delete {
-            padding: 4px 8px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8em;
-            transition: background 0.2s;
-        }
-        .btn-edit {
-            background: #3742fa;
-            color: white;
-        }
-        .btn-edit:hover {
-            background: #2f32e2;
-        }
-        .btn-delete {
-            background: #ff4757;
-            color: white;
-        }
-        .btn-delete:hover {
-            background: #ff3838;
-        }
-
-        /* モーダル */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .modal-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #2f3640;
-            margin: 0;
-        }
-        .close {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 1;
-        }
-        .close:hover {
-            color: #333;
-        }
-
-        /* フォーム */
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #2f3640;
-        }
-        .form-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9em;
-            box-sizing: border-box;
-        }
-        .form-textarea {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9em;
-            resize: vertical;
-            min-height: 80px;
-            box-sizing: border-box;
-        }
-        .form-select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9em;
-            box-sizing: border-box;
-        }
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-        }
-        .btn-primary {
-            background: #3742fa;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-        .btn-primary:hover {
-            background: #2f32e2;
-        }
-        .btn-secondary {
-            background: #f1f2f6;
-            color: #2f3640;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-        .btn-secondary:hover {
-            background: #ddd;
-        }
-
-        .clickable-links a {
-            color: #3742fa;
-            text-decoration: none;
-        }
-        .clickable-links a:hover {
-            text-decoration: underline;
-        }
-
-        /* リンク管理 */
-        .link-item {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
-        .link-item input {
-            flex: 1;
-            padding: 6px 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-        .link-item .link-name {
-            width: 120px;
-            flex: none;
-        }
-        .link-item .link-url {
-            flex: 2;
-        }
-        .link-remove {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8em;
-        }
-        .link-remove:hover {
-            background: #ff3838;
-        }
-        .links-display {
-            margin-top: 10px;
-        }
-        .links-display a {
-            display: inline-block;
-            margin-right: 10px;
-            margin-bottom: 5px;
-            padding: 4px 8px;
-            background: #e8f4fd;
-            color: #3742fa;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 0.85em;
-        }
-        .links-display a:hover {
-            background: #d1ecf9;
-        }
-
-        /* ドラッグ&ドロップ */
-        /* ドラッグ&ドロップ */
-.task-card {
-    cursor: grab;
-}
-.task-card:active {
-    cursor: grabbing;
-}
-.task-card.dragging {
-    opacity: 0.5;
-    transform: rotate(2deg);
-}
-.section.drag-over {
-    background: #f0f8ff;
-    border: 2px dashed #3742fa;
-    border-radius: 8px;
-}
-.drop-zone {
-    min-height: 80px;
-    border: 2px dashed transparent;
-    border-radius: 8px;
-    transition: all 0.2s;
-    position: relative;
-}
-.drop-zone:empty {
-    min-height: 120px;
-}
-.drop-zone:empty::after {
-    content: 'タスクをここにドロップ';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #ccc;
-    font-size: 0.9em;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-.drop-zone.drag-over {
-    border-color: #3742fa;
-    background: #f0f8ff;
-}
-.drop-zone.drag-over:empty::after {
-    opacity: 1;
-    color: #3742fa;
-}
-
-        /* セクション管理 */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .section-actions {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .add-section-btn {
-            background: #3742fa;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            margin: 20px 0;
-            transition: background 0.2s;
-        }
-        .add-section-btn:hover {
-            background: #2f32e2;
-        }
-        .btn-delete-section {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8em;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .section-header:hover .btn-delete-section {
-            opacity: 1;
-        }
-        .btn-delete-section:hover {
-            background: #ff3838;
-        }
-/* 表示切り替えボタン */
-.view-toggle {
-    display: flex;
-    gap: 5px;
-}
-.toggle-btn {
-    background: #f1f2f6;
-    color: #2f3640;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition: all 0.2s;
-}
-.toggle-btn:hover {
-    background: #ddd;
-}
-.toggle-btn.active {
-    background: #3742fa;
-    color: white;
-}
-
-/* リスト表示スタイル */
-.list-view .task-grid {
-    display: block;
-}
-.list-view .task-card {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    margin-bottom: 8px;
-    border-left: none;
-    border-radius: 6px;
-    min-height: auto;
-}
-.list-view .task-card:hover {
-    transform: none;
-}
-.list-view .task-header {
-    flex: 1;
-    margin-bottom: 0;
-}
-.list-view .task-title {
-    font-size: 1em;
-    margin-bottom: 0;
-}
-.list-view .task-number {
-    margin-right: 10px;
-}
-.list-view .task-description {
-    display: none; /* リスト表示では説明を隠す */
-}
-.list-view .task-notes {
-    display: none; /* リスト表示では備考を隠す */
-}
-.list-view .links-display {
-    display: none; /* リスト表示ではリンクを隠す */
-}
-.list-view .task-meta {
-    margin-left: 20px;
-}
-.list-view .task-actions {
-    opacity: 1;
-    margin-top: 0;
-    margin-left: 10px;
-}
-
-/* 詳細展開用（オプション） */
-.list-view .task-card.expanded .task-description,
-.list-view .task-card.expanded .task-notes,
-.list-view .task-card.expanded .links-display {
-    display: block;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #eee;
-    flex-basis: 100%;
-}
-.list-view .task-card.expanded {
-    flex-wrap: wrap;
-}
-/* ノート内見出しスタイル */
 .task-notes .note-h1 {
     font-size: 1.4em;
     font-weight: bold;
@@ -640,15 +367,746 @@ body {
     margin: 4px 0 2px 0;
     line-height: 1.4;
 }
-/* ステータスバッジ */
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
+
+.add-task-btn {
+    background: #2ed573;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-left: 10px;
+    transition: background 0.2s;
+}
+
+.add-task-btn:hover {
+    background: #26de81;
+}
+
+.task-actions {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.task-card:hover .task-actions {
+    opacity: 1;
+}
+
+.btn-edit, .btn-delete {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
     font-size: 0.8em;
-    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.btn-edit {
+    background: #3742fa;
     color: white;
 }
-.status-badge.pending { background: #95a5a6; }
-.status-badge.in_progress { background: #f39c12; }
-.status-badge.completed { background: #2ed573; }
-.status-badge.on_hold { background: #e74c3c; }
+
+.btn-edit:hover {
+    background: #2f32e2;
+}
+
+.btn-delete {
+    background: #ff4757;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #ff3838;
+}
+
+/* ========== ドラッグ&ドロップ ========== */
+.task-card.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+}
+
+.section.drag-over {
+    background: #f0f8ff;
+    border: 2px dashed #3742fa;
+    border-radius: 8px;
+}
+
+.drop-zone {
+    min-height: 80px;
+    border: 2px dashed transparent;
+    border-radius: 8px;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.drop-zone:empty {
+    min-height: 120px;
+}
+
+.drop-zone:empty::after {
+    content: 'タスクをここにドロップ';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ccc;
+    font-size: 0.9em;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.drop-zone.drag-over {
+    border-color: #3742fa;
+    background: #f0f8ff;
+}
+
+.drop-zone.drag-over:empty::after {
+    opacity: 1;
+    color: #3742fa;
+}
+
+/* ========== リスト表示 ========== */
+.list-view .task-grid {
+    display: block;
+}
+
+.list-view .task-card {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    margin-bottom: 8px;
+    border-left: none;
+    border-radius: 6px;
+    min-height: auto;
+}
+
+.list-view .task-card:hover {
+    transform: none;
+}
+
+.list-view .task-header {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.list-view .task-title {
+    font-size: 1em;
+    margin-bottom: 0;
+}
+
+.list-view .task-number {
+    margin-right: 10px;
+}
+
+.list-view .task-description,
+.list-view .task-notes,
+.list-view .links-display {
+    display: none;
+}
+
+.list-view .task-meta {
+    margin-left: 20px;
+}
+
+.list-view .task-actions {
+    opacity: 1;
+    margin-top: 0;
+    margin-left: 10px;
+}
+
+.list-view .task-card.expanded .task-description,
+.list-view .task-card.expanded .task-notes,
+.list-view .task-card.expanded .links-display {
+    display: block;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+    flex-basis: 100%;
+}
+
+.list-view .task-card.expanded {
+    flex-wrap: wrap;
+}
+
+/* ========== リンク管理 ========== */
+.links-display {
+    margin-top: 10px;
+}
+
+.links-display a {
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 5px;
+    padding: 4px 8px;
+    background: #e8f4fd;
+    color: #3742fa;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+.links-display a:hover {
+    background: #d1ecf9;
+}
+
+.link-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.link-item input {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.link-item .link-name {
+    width: 120px;
+    flex: none;
+}
+
+.link-item .link-url {
+    flex: 2;
+}
+
+.link-remove {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+
+.link-remove:hover {
+    background: #ff3838;
+}
+
+.clickable-links a {
+    color: #3742fa;
+    text-decoration: none;
+}
+
+.clickable-links a:hover {
+    text-decoration: underline;
+}
+
+/* ========== モーダル ========== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-title {
+    font-size: 1.3em;
+    font-weight: 600;
+    color: #2f3640;
+    margin: 0;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover {
+    color: #333;
+}
+
+/* ========== フォーム ========== */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #2f3640;
+}
+
+.form-label-small {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-input, .form-textarea, .form-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9em;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 12px;
+}
+
+.date-field {
+    flex: 1;
+}
+
+.progress-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.form-range {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+}
+
+.form-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    cursor: pointer;
+}
+
+.form-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    cursor: pointer;
+    border: none;
+}
+
+.progress-value {
+    font-weight: 600;
+    color: var(--accent-blue);
+    min-width: 40px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.btn-primary {
+    background: #3742fa;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.btn-primary:hover {
+    background: #2f32e2;
+}
+
+.btn-secondary {
+    background: #f1f2f6;
+    color: #2f3640;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+.btn-secondary:hover {
+    background: #ddd;
+}
+
+/* ========== ガントチャート ========== */
+.gantt-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+}
+
+.gantt-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.gantt-period {
+    display: flex;
+    gap: 5px;
+}
+
+.period-btn {
+    background: #f1f2f6;
+    color: var(--text-primary);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s;
+}
+
+.period-btn:hover {
+    background: #ddd;
+}
+
+.period-btn.active {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.today-btn {
+    background: var(--accent-green);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.2s;
+}
+
+.today-btn:hover {
+    background: #26de81;
+}
+
+.gantt-chart {
+    overflow-x: auto;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    background: white;
+}
+
+.gantt-header {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 2px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.gantt-tasks-header {
+    width: 300px;
+    min-width: 300px;
+    padding: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-right: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.gantt-timeline-header {
+    display: flex;
+    flex: 1;
+    min-width: 1200px;
+}
+
+.gantt-date-header {
+    flex: 1;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 0.8em;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-right: 1px solid #ddd;
+    min-width: 40px;
+    max-width: 60px;
+    background: #f8f9fa;
+}
+
+.gantt-date-header.today {
+    background: #e3f2fd;
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.gantt-body {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.gantt-task-row {
+    display: flex;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 50px;
+    position: relative;
+}
+
+.gantt-task-row:hover {
+    background: #f8f9fa;
+}
+
+.gantt-task-info {
+    width: 300px;
+    min-width: 300px;
+    padding: 12px 15px;
+    border-right: 2px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: white;
+}
+
+.gantt-task-title {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-size: 0.9em;
+    line-height: 1.3;
+}
+
+.gantt-task-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.gantt-timeline {
+    position: relative;
+    flex: 1;
+    min-width: 1200px;
+    background: white;
+    background-image: repeating-linear-gradient(
+        to right,
+        transparent,
+        transparent 39px,
+        #f0f0f0 39px,
+        #f0f0f0 40px
+    );
+}
+
+.gantt-task-bar {
+    position: absolute;
+    top: 15px;
+    height: 20px;
+    background: var(--accent-blue);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.gantt-task-bar:hover {
+    transform: scaleY(1.2);
+    box-shadow: 0 2px 8px rgba(55, 66, 250, 0.4);
+    z-index: 5;
+}
+
+.gantt-task-bar.high {
+    background: var(--accent-red);
+}
+
+.gantt-task-bar.medium {
+    background: var(--accent-orange);
+}
+
+.gantt-task-bar.low {
+    background: var(--accent-green);
+}
+
+.gantt-task-bar.separate {
+    background: var(--accent-gray);
+}
+
+.gantt-progress-bar {
+    height: 100%;
+    background: rgba(255,255,255,0.7);
+    border-radius: 10px;
+    transition: width 0.3s;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.gantt-task-bar-text {
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    font-size: 0.7em;
+    color: white;
+    font-weight: 500;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* 未スケジュール */
+.gantt-unscheduled {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.gantt-unscheduled h3 {
+    margin: 0 0 15px 0;
+    color: var(--text-secondary);
+    font-size: 1.1em;
+}
+
+.unscheduled-tasks {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.unscheduled-task {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid var(--accent-gray);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.unscheduled-task:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.unscheduled-task .task-title {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.unscheduled-task .task-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ========== その他 ========== */
+.data-format {
+    background: #ecf0f1;
+    border-radius: 6px;
+    padding: 10px;
+    margin: 10px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #2c3e50;
+}
+
+.reference-link {
+    color: #3742fa;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.reference-link:hover {
+    text-decoration: underline;
+}
+
+/* ========== レスポンシブ ========== */
+@media (max-width: 768px) {
+    .header > div {
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .controls {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .view-toggle {
+        justify-content: center;
+    }
+
+    .date-inputs {
+        flex-direction: column;
+    }
+
+    .gantt-tasks-header,
+    .gantt-task-info {
+        width: 250px;
+        min-width: 250px;
+    }
+
+    .gantt-timeline-header,
+    .gantt-timeline {
+        min-width: 800px;
+    }
+
+    .gantt-controls {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .unscheduled-tasks {
+        grid-template-columns: 1fr;
+    }
+}

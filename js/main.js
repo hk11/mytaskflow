@@ -4,19 +4,44 @@
 
 // グローバル変数
 let currentProjectData = null;
+let currentProjectId = null;
 let autoScrollInterval = null;
 let isDragging = false;
 let isEventInitialized = false;
 
+// ガントチャート関連
+let currentGanttPeriod = 'week'; // デフォルトを週表示に設定
+let ganttStartDate = new Date();
+let ganttEndDate = new Date();
+let ganttDates = [];
+
 // DOM読み込み完了時に実行
 document.addEventListener('DOMContentLoaded', function() {
-    loadProjectData();
-     // イベントリスナーは1回だけ初期化
+    // URLパラメータからプロジェクトIDを取得
+    currentProjectId = getProjectIdFromUrl();
+
+    if (!currentProjectId) {
+        showError('プロジェクトIDが指定されていません');
+        return;
+    }
+
+    loadProjectData(currentProjectId);
+
+    // イベントリスナーは1回だけ初期化
     if (!isEventInitialized) {
         initializeModalEvents();
         isEventInitialized = true;
     }
 });
+
+/**
+ * URLパラメータからプロジェクトIDを取得
+ */
+function getProjectIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const projectId = params.get('project_id');
+    return projectId ? parseInt(projectId) : null;
+}
 
 /**
  * モーダル関連のイベント初期化
@@ -61,14 +86,33 @@ function initializeModalEvents() {
     document.addEventListener('dragover', handleAutoScroll);
 
     // 表示切り替えボタン
-document.getElementById('cardViewBtn').addEventListener('click', () => switchView('card'));
-document.getElementById('listViewBtn').addEventListener('click', () => switchView('list'));
+    document.getElementById('cardViewBtn').addEventListener('click', () => switchView('card'));
+    document.getElementById('listViewBtn').addEventListener('click', () => switchView('list'));
+    document.getElementById('ganttViewBtn').addEventListener('click', () => switchView('gantt'));
+
+    // 進捗バーのイベント
+    const progressRange = document.getElementById('taskProgress');
+    const progressValue = document.querySelector('.progress-value');
+
+    progressRange.addEventListener('input', function(e) {
+        progressValue.textContent = e.target.value + '%';
+    });
+
+    // ガントチャート制御
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('period-btn')) {
+            switchGanttPeriod(e.target.dataset.period);
+        }
+        if (e.target.classList.contains('today-btn')) {
+            scrollToToday();
+        }
+    });
 }
 
 /**
  * プロジェクトデータを読み込み
  */
-async function loadProjectData(projectId = 1) {
+async function loadProjectData(projectId) {
     const loadingElement = document.getElementById('loading');
     const errorElement = document.getElementById('error');
     const contentElement = document.getElementById('content');
@@ -101,12 +145,40 @@ async function loadProjectData(projectId = 1) {
         // グローバル変数に保存
         currentProjectData = data;
 
+        // データ読み込み完了後に表示モードを復元
+        restoreViewMode();
+
     } catch (error) {
         console.error('データ読み込みエラー:', error);
         loadingElement.style.display = 'none';
-        errorElement.style.display = 'block';
-        errorElement.textContent = `エラー: ${error.message}`;
+        showError(`エラー: ${error.message}`);
     }
+}
+
+/**
+ * エラー表示
+ */
+function showError(message) {
+    const errorElement = document.getElementById('error');
+    errorElement.style.display = 'block';
+    errorElement.textContent = message;
+
+    // プロジェクト一覧に戻るボタンを追加
+    const backBtn = document.createElement('button');
+    backBtn.textContent = 'プロジェクト一覧に戻る';
+    backBtn.style.marginTop = '10px';
+    backBtn.style.padding = '8px 16px';
+    backBtn.style.backgroundColor = 'white';
+    backBtn.style.color = 'var(--accent-red)';
+    backBtn.style.border = '1px solid white';
+    backBtn.style.borderRadius = '4px';
+    backBtn.style.cursor = 'pointer';
+    backBtn.onclick = () => window.location.href = 'index.html';
+
+    errorElement.innerHTML = '';
+    errorElement.appendChild(document.createTextNode(message));
+    errorElement.appendChild(document.createElement('br'));
+    errorElement.appendChild(backBtn);
 }
 
 /**
@@ -118,6 +190,9 @@ function displayProjectData(data) {
     // ヘッダー更新
     document.getElementById('project-name').textContent = project.name;
     document.getElementById('project-description').textContent = project.description || 'プロジェクト管理システム';
+
+    // ページタイトルも更新
+    document.title = `${project.name} - MyTaskFlow`;
 
     // コンテンツエリアにセクション表示
     const contentElement = document.getElementById('content');
@@ -300,6 +375,7 @@ function createTaskCard(task, index) {
 
     return cardDiv;
 }
+
 /**
  * ステータスラベル取得
  */
@@ -429,7 +505,7 @@ async function moveTaskToSection(taskId, newSectionId) {
 
         if (result.success) {
             // データを再読み込み
-            loadProjectData();
+            loadProjectData(currentProjectId);
         } else {
             alert('エラー: ' + (result.error || 'タスクの移動に失敗しました'));
         }
@@ -452,6 +528,7 @@ function getPriorityLabel(priority) {
     };
     return labels[priority] || priority;
 }
+
 /**
  * 備考テキストのフォーマット
  */
@@ -526,6 +603,16 @@ function openEditTaskModal(task) {
     document.getElementById('taskPriority').value = task.priority || 'medium';
     document.getElementById('taskStatus').value = task.status || 'pending';
 
+    // 日付フィールド
+    document.getElementById('taskStartDate').value = task.start_date || '';
+    document.getElementById('taskEndDate').value = task.end_date || '';
+    document.getElementById('taskActualStartDate').value = task.actual_start_date || '';
+
+    // 進捗
+    const progress = task.progress || 0;
+    document.getElementById('taskProgress').value = progress;
+    document.querySelector('.progress-value').textContent = progress + '%';
+
     // リンク表示
     displayLinksInForm(task.links || []);
 
@@ -586,8 +673,6 @@ function displayLinksInForm(links) {
 async function handleFormSubmit(e) {
     e.preventDefault();
 
-    console.log('フォーム送信開始'); // この行を追加
-
     const formData = new FormData(e.target);
     const taskData = Object.fromEntries(formData);
 
@@ -618,7 +703,7 @@ async function handleFormSubmit(e) {
 
             closeModal();
             // データを再読み込み
-            loadProjectData();
+            loadProjectData(currentProjectId);
         } else {
             alert('エラー: ' + (result.error || 'タスクの保存に失敗しました'));
         }
@@ -724,7 +809,7 @@ async function deleteTask(taskId) {
 
         if (result.success) {
             // データを再読み込み
-            loadProjectData();
+            loadProjectData(currentProjectId);
         } else {
             alert('エラー: ' + (result.error || 'タスクの削除に失敗しました'));
         }
@@ -766,8 +851,8 @@ async function handleSectionFormSubmit(e) {
     const formData = new FormData(e.target);
     const sectionData = Object.fromEntries(formData);
 
-    // プロジェクトIDを追加（現在は固定値1）
-    sectionData.project_id = 1;
+    // プロジェクトIDを追加（動的に設定）
+    sectionData.project_id = currentProjectId;
 
     try {
         const response = await fetch('api/sections.php', {
@@ -783,7 +868,7 @@ async function handleSectionFormSubmit(e) {
         if (result.success) {
             closeSectionModal();
             // データを再読み込み
-            loadProjectData();
+            loadProjectData(currentProjectId);
         } else {
             alert('エラー: ' + (result.error || 'セクションの作成に失敗しました'));
         }
@@ -811,7 +896,7 @@ async function deleteSection(sectionId) {
 
         if (result.success) {
             // データを再読み込み
-            loadProjectData();
+            loadProjectData(currentProjectId);
         } else {
             alert('エラー: ' + (result.error || 'セクションの削除に失敗しました'));
         }
@@ -827,9 +912,7 @@ async function deleteSection(sectionId) {
  */
 window.addEventListener('error', function(e) {
     console.error('JavaScript エラー:', e.error);
-    const errorElement = document.getElementById('error');
-    errorElement.style.display = 'block';
-    errorElement.textContent = 'JavaScriptエラーが発生しました。コンソールを確認してください。';
+    showError('JavaScriptエラーが発生しました。コンソールを確認してください。');
 });
 
 /**
@@ -837,16 +920,36 @@ window.addEventListener('error', function(e) {
  */
 function switchView(viewMode) {
     const content = document.getElementById('content');
+    const ganttContent = document.getElementById('ganttContent');
     const cardBtn = document.getElementById('cardViewBtn');
     const listBtn = document.getElementById('listViewBtn');
+    const ganttBtn = document.getElementById('ganttViewBtn');
+
+    // 全ボタンのactiveクラスを削除
+    [cardBtn, listBtn, ganttBtn].forEach(btn => btn.classList.remove('active'));
 
     if (viewMode === 'list') {
+        content.style.display = 'block';
+        ganttContent.style.display = 'none';
         content.classList.add('list-view');
-        cardBtn.classList.remove('active');
         listBtn.classList.add('active');
+    } else if (viewMode === 'gantt') {
+        content.style.display = 'none';
+        ganttContent.style.display = 'block';
+        cardBtn.classList.remove('active');
+        ganttBtn.classList.add('active');
+
+        // ガントチャートを強制的に表示（データがある場合のみ）
+        if (currentProjectData && currentProjectData.sections) {
+            // 少し遅延を入れて確実に描画
+            setTimeout(() => {
+                displayGanttChart();
+            }, 100);
+        }
     } else {
+        content.style.display = 'block';
+        ganttContent.style.display = 'none';
         content.classList.remove('list-view');
-        listBtn.classList.remove('active');
         cardBtn.classList.add('active');
     }
 
@@ -862,9 +965,322 @@ function restoreViewMode() {
     switchView(savedMode);
 }
 
-// ページ読み込み時に表示モードを復元
-document.addEventListener('DOMContentLoaded', function() {
-    loadProjectData();
-    initializeModalEvents();
-    restoreViewMode(); // この行を追加
-});
+// ===== ガントチャート機能 =====
+
+/**
+ * ガントチャート表示
+ */
+function displayGanttChart() {
+    if (!currentProjectData) return;
+
+    setupGanttDates();
+    renderGanttHeader();
+    renderGanttBody();
+}
+
+/**
+ * ガントチャート期間設定
+ */
+function setupGanttDates() {
+    const today = new Date();
+    ganttDates = [];
+
+    if (currentGanttPeriod === 'month') {
+        // 2ヶ月前から4ヶ月後まで日単位で表示
+        ganttStartDate = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+        ganttEndDate = new Date(today.getFullYear(), today.getMonth() + 4, 0);
+
+        // 日付配列を作成
+        const current = new Date(ganttStartDate);
+        while (current <= ganttEndDate) {
+            ganttDates.push(new Date(current));
+            current.setDate(current.getDate() + 1);
+        }
+    } else {
+        // 4週間前から8週間後まで日単位で表示
+        ganttStartDate = new Date(today);
+        ganttStartDate.setDate(today.getDate() - 28);
+        ganttEndDate = new Date(today);
+        ganttEndDate.setDate(today.getDate() + 56);
+
+        // 日付配列を作成
+        const current = new Date(ganttStartDate);
+        while (current <= ganttEndDate) {
+            ganttDates.push(new Date(current));
+            current.setDate(current.getDate() + 1);
+        }
+    }
+}
+
+/**
+ * ガントチャートヘッダー描画
+ */
+function renderGanttHeader() {
+    const header = document.getElementById('ganttTimelineHeader');
+    header.innerHTML = '';
+
+    const today = new Date();
+    const todayStr = formatDate(today);
+
+    ganttDates.forEach(date => {
+        const headerCell = document.createElement('div');
+        headerCell.className = 'gantt-date-header';
+
+        const dateStr = formatDate(date);
+        const isToday = dateStr === todayStr;
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6; // 日曜日または土曜日
+
+        if (isToday) {
+            headerCell.classList.add('today');
+        }
+
+        if (isWeekend) {
+            headerCell.classList.add('weekend');
+        }
+
+        // 曜日を取得
+        const dayOfWeek = getDayOfWeek(date);
+
+        // 月表示の場合は日付のみ、週表示の場合は月/日 + 曜日
+        if (currentGanttPeriod === 'month') {
+            headerCell.innerHTML = `
+                <div>${date.getDate()}</div>
+                <div class="day-of-week">${dayOfWeek}</div>
+            `;
+            // 月の最初の日は月も表示
+            if (date.getDate() === 1) {
+                headerCell.innerHTML = `
+                    <div>${date.getMonth() + 1}/${date.getDate()}</div>
+                    <div class="day-of-week">${dayOfWeek}</div>
+                `;
+            }
+        } else {
+            headerCell.innerHTML = `
+                <div>${date.getMonth() + 1}/${date.getDate()}</div>
+                <div class="day-of-week">${dayOfWeek}</div>
+            `;
+        }
+
+        headerCell.dataset.date = dateStr;
+        header.appendChild(headerCell);
+    });
+}
+
+/**
+ * 曜日取得
+ */
+function getDayOfWeek(date) {
+    const days = ['日', '月', '火', '水', '木', '金', '土'];
+    return days[date.getDay()];
+}
+
+/**
+ * ガントチャート本体描画
+ */
+function renderGanttBody() {
+    const body = document.getElementById('ganttBody');
+    const unscheduled = document.getElementById('unscheduledTasks');
+    body.innerHTML = '';
+    unscheduled.innerHTML = '';
+
+    if (!currentProjectData.sections) return;
+
+    currentProjectData.sections.forEach(section => {
+        section.tasks.forEach(task => {
+            if (task.start_date && task.end_date) {
+                // スケジュール済みタスク
+                const taskRow = createGanttTaskRow(task);
+                body.appendChild(taskRow);
+            } else {
+                // 未スケジュールタスク
+                const taskCard = createUnscheduledTask(task);
+                unscheduled.appendChild(taskCard);
+            }
+        });
+    });
+
+    // スケジュール済みタスクがない場合のメッセージ
+    if (body.children.length === 0) {
+        const emptyRow = document.createElement('div');
+        emptyRow.className = 'gantt-empty';
+        emptyRow.innerHTML = `
+            <div class="gantt-task-info">
+                <div class="gantt-task-title" style="color: #999;">日程が設定されたタスクがありません</div>
+            </div>
+            <div class="gantt-timeline"></div>
+        `;
+        body.appendChild(emptyRow);
+    }
+}
+
+/**
+ * ガントチャートタスク行作成
+ */
+function createGanttTaskRow(task) {
+    const row = document.createElement('div');
+    row.className = 'gantt-task-row';
+    row.dataset.taskId = task.id;
+
+    // タスク情報
+    const taskInfo = document.createElement('div');
+    taskInfo.className = 'gantt-task-info';
+    taskInfo.innerHTML = `
+        <div class="gantt-task-title">${task.title}</div>
+        <div class="gantt-task-meta">
+            <span class="priority-badge ${task.priority}">${getPriorityLabel(task.priority)}</span>
+            <span class="status-badge ${task.status}">${getStatusLabel(task.status)}</span>
+            ${task.assignee ? `<span class="assignee">${task.assignee}</span>` : ''}
+        </div>
+    `;
+
+    // タイムライン
+    const timeline = document.createElement('div');
+    timeline.className = 'gantt-timeline';
+
+    const taskBar = createTaskBar(task);
+    if (taskBar) {
+        timeline.appendChild(taskBar);
+    }
+
+    row.appendChild(taskInfo);
+    row.appendChild(timeline);
+
+    return row;
+}
+
+/**
+ * タスクバー作成
+ */
+function createTaskBar(task) {
+    const startDate = new Date(task.start_date);
+    const endDate = new Date(task.end_date);
+
+    // 表示範囲外のタスクは表示しない
+    if (endDate < ganttStartDate || startDate > ganttEndDate) {
+        return null;
+    }
+
+    const bar = document.createElement('div');
+    bar.className = `gantt-task-bar ${task.priority}`;
+    bar.dataset.taskId = task.id;
+
+    const { left, width } = calculateBarPosition(startDate, endDate);
+    bar.style.left = left + '%';
+    bar.style.width = width + '%';
+
+    // 進捗バー（完了部分を白っぽく表示）
+    const progress = task.progress || 0;
+    if (progress > 0) {
+        const progressBar = document.createElement('div');
+        progressBar.className = 'gantt-progress-bar';
+        progressBar.style.width = progress + '%';
+        bar.appendChild(progressBar);
+    }
+
+    // タスク名をバー内に表示（短縮）
+    const barText = document.createElement('div');
+    barText.className = 'gantt-task-bar-text';
+    barText.textContent = task.title.length > 15 ? task.title.substring(0, 12) + '...' : task.title;
+    bar.appendChild(barText);
+
+    // ツールチップ
+    bar.title = `${task.title}\n期間: ${task.start_date} - ${task.end_date}\n進捗: ${progress}%`;
+
+    // クリックで編集
+    bar.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEditTaskModal(task);
+    });
+
+    return bar;
+}
+
+/**
+ * バー位置計算
+ */
+function calculateBarPosition(startDate, endDate) {
+    const totalDays = ganttDates.length;
+
+    // 開始位置を計算
+    let startIndex = ganttDates.findIndex(date =>
+        formatDate(date) === formatDate(startDate)
+    );
+
+    // 終了位置を計算
+    let endIndex = ganttDates.findIndex(date =>
+        formatDate(date) === formatDate(endDate)
+    );
+
+    // 範囲外の場合の調整
+    if (startIndex === -1) {
+        startIndex = startDate < ganttStartDate ? 0 : totalDays - 1;
+    }
+
+    if (endIndex === -1) {
+        endIndex = endDate > ganttEndDate ? totalDays - 1 : 0;
+    }
+
+    // 最低1日分の幅を確保
+    if (endIndex <= startIndex) {
+        endIndex = startIndex;
+    }
+
+    const left = (startIndex / totalDays) * 100;
+    const width = Math.max(1, ((endIndex - startIndex + 1) / totalDays) * 100);
+
+    return { left: Math.max(0, left), width: Math.min(100 - left, width) };
+}
+
+/**
+ * 未スケジュールタスク作成
+ */
+function createUnscheduledTask(task) {
+    const taskDiv = document.createElement('div');
+    taskDiv.className = 'unscheduled-task';
+    taskDiv.dataset.taskId = task.id;
+    taskDiv.innerHTML = `
+        <div class="task-title">${task.title}</div>
+        <div class="task-meta">
+            <span class="priority-badge ${task.priority}">${getPriorityLabel(task.priority)}</span>
+            <span class="status-badge ${task.status}">${getStatusLabel(task.status)}</span>
+            ${task.assignee ? `<span class="assignee">${task.assignee}</span>` : ''}
+        </div>
+    `;
+
+    // クリックで編集
+    taskDiv.addEventListener('click', () => openEditTaskModal(task));
+
+    return taskDiv;
+}
+
+/**
+ * ガント期間切り替え
+ */
+function switchGanttPeriod(period) {
+    currentGanttPeriod = period;
+
+    // ボタンの状態更新
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.period === period);
+    });
+
+    // チャート再描画
+    displayGanttChart();
+}
+
+/**
+ * 今日までスクロール
+ */
+function scrollToToday() {
+    const todayHeader = document.querySelector('.gantt-date-header.today');
+    if (todayHeader) {
+        todayHeader.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+    }
+}
+
+/**
+ * 日付フォーマット関数
+ */
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}

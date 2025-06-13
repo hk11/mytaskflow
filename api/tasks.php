@@ -259,6 +259,7 @@ function moveTask($db) {
         ]);
     }
 }
+
 /**
  * タスク作成
  */
@@ -296,39 +297,26 @@ function createTask($db) {
         $display_order_stmt->execute();
         $next_order = $display_order_stmt->fetch()['next_order'];
 
-/*
         // タスク挿入
-        $sql = "INSERT INTO tasks (task_number, title, description, notes, assignee, priority, status, section_id, display_order)
-                VALUES (:task_number, :title, :description, :notes, :assignee, :priority, :status, :section_id, :display_order)";
+        $sql = "INSERT INTO tasks (task_number, title, description, notes, assignee, priority, status, start_date, end_date, actual_start_date, progress, section_id, display_order)
+                VALUES (:task_number, :title, :description, :notes, :assignee, :priority, :status, :start_date, :end_date, :actual_start_date, :progress, :section_id, :display_order)";
 
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':task_number', $next_number, PDO::PARAM_INT);
-        $stmt->bindParam(':title', $input['title']);
-        $stmt->bindParam(':description', $input['description'] ?? '');
-        $stmt->bindParam(':notes', $input['notes'] ?? '');
-        $stmt->bindParam(':assignee', $input['assignee'] ?? '');
-        $stmt->bindParam(':priority', $input['priority'] ?? 'medium');
-        $stmt->bindParam(':status', $input['status'] ?? 'pending');
-        $stmt->bindParam(':section_id', $input['section_id'], PDO::PARAM_INT);
-        $stmt->bindParam(':display_order', $next_order, PDO::PARAM_INT);
-        */
-
-        // タスク挿入
-$sql = "INSERT INTO tasks (task_number, title, description, notes, assignee, priority, status, section_id, display_order)
-        VALUES (:task_number, :title, :description, :notes, :assignee, :priority, :status, :section_id, :display_order)";
-
-$stmt = $db->prepare($sql);
-$stmt->execute([
-    ':task_number' => $next_number,
-    ':title' => $input['title'],
-    ':description' => $input['description'] ?? '',
-    ':notes' => $input['notes'] ?? '',
-    ':assignee' => $input['assignee'] ?? '',
-    ':priority' => $input['priority'] ?? 'medium',
-    ':status' => $input['status'] ?? 'pending',
-    ':section_id' => $input['section_id'],
-    ':display_order' => $next_order
-]);
+        $stmt->execute([
+            ':task_number' => $next_number,
+            ':title' => $input['title'],
+            ':description' => $input['description'] ?? '',
+            ':notes' => $input['notes'] ?? '',
+            ':assignee' => $input['assignee'] ?? '',
+            ':priority' => $input['priority'] ?? 'medium',
+            ':status' => $input['status'] ?? 'pending',
+            ':start_date' => !empty($input['start_date']) ? $input['start_date'] : null,
+            ':end_date' => !empty($input['end_date']) ? $input['end_date'] : null,
+            ':actual_start_date' => !empty($input['actual_start_date']) ? $input['actual_start_date'] : null,
+            ':progress' => isset($input['progress']) ? (int)$input['progress'] : 0,
+            ':section_id' => $input['section_id'],
+            ':display_order' => $next_order
+        ]);
 
         $task_id = $db->lastInsertId();
 
@@ -347,9 +335,6 @@ $stmt->execute([
     }
 }
 
-/**
- * タスク更新
- */
 /**
  * タスク更新
  */
@@ -381,7 +366,11 @@ function updateTask($db) {
                 notes = :notes,
                 assignee = :assignee,
                 priority = :priority,
-                status = :status
+                status = :status,
+                start_date = :start_date,
+                end_date = :end_date,
+                actual_start_date = :actual_start_date,
+                progress = :progress
                 WHERE id = :id";
 
         $stmt = $db->prepare($sql);
@@ -392,7 +381,11 @@ function updateTask($db) {
             ':notes' => $input['notes'] ?? '',
             ':assignee' => $input['assignee'] ?? '',
             ':priority' => $input['priority'] ?? 'medium',
-            ':status' => $input['status'] ?? 'pending'
+            ':status' => $input['status'] ?? 'pending',
+            ':start_date' => !empty($input['start_date']) ? $input['start_date'] : null,
+            ':end_date' => !empty($input['end_date']) ? $input['end_date'] : null,
+            ':actual_start_date' => !empty($input['actual_start_date']) ? $input['actual_start_date'] : null,
+            ':progress' => isset($input['progress']) ? (int)$input['progress'] : 0
         ]);
 
         echo json_encode([
@@ -408,66 +401,7 @@ function updateTask($db) {
         ]);
     }
 }
-/*
-function updateTask($db) {
-    $input = json_decode(file_get_contents('php://input'), true);
 
-    if (!$input || empty($input['id'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'タスクIDが必要です']);
-        return;
-    }
-
-    try {
-        // タスク存在確認
-        $check_sql = "SELECT id FROM tasks WHERE id = :id";
-        $check_stmt = $db->prepare($check_sql);
-        $check_stmt->bindParam(':id', $input['id'], PDO::PARAM_INT);
-        $check_stmt->execute();
-
-        if (!$check_stmt->fetch()) {
-            http_response_code(404);
-            echo json_encode(['error' => 'タスクが見つかりません']);
-            return;
-        }
-
-        // 更新SQL構築
-        $fields = [];
-        $params = [':id' => $input['id']];
-
-        $allowed_fields = ['title', 'description', 'notes', 'assignee', 'priority', 'status'];
-
-        foreach ($allowed_fields as $field) {
-            if (isset($input[$field])) {
-                $fields[] = "{$field} = :{$field}";
-                $params[":{$field}"] = $input[$field];
-            }
-        }
-
-        if (empty($fields)) {
-            http_response_code(400);
-            echo json_encode(['error' => '更新するフィールドがありません']);
-            return;
-        }
-
-        $sql = "UPDATE tasks SET " . implode(', ', $fields) . " WHERE id = :id";
-        $stmt = $db->prepare($sql);
-        $stmt->execute($params);
-
-        echo json_encode([
-            'success' => true,
-            'message' => 'タスクが更新されました'
-        ]);
-
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode([
-            'error' => 'データベースエラー',
-            'message' => $e->getMessage()
-        ]);
-    }
-}
-*/
 /**
  * タスク削除
  */
@@ -512,3 +446,4 @@ function deleteTask($db) {
         ]);
     }
 }
+?>

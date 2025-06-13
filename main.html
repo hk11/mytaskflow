@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delinet開発計画書</title>
+    <title>MyTaskFlow - タスク管理</title>
     <link href="main.css?v=<?php echo time(); ?>" rel="stylesheet">
-    <style>
-
-    </style>
 </head>
 <body>
     <div class="header">
-        <h1 id="project-name">MyTaskFlow</h1>
-        <div class="subtitle" id="project-description">プロジェクト管理システム</div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 id="project-name">MyTaskFlow</h1>
+                <div class="subtitle" id="project-description">プロジェクト管理システム</div>
+            </div>
+            <div>
+                <a href="index.html" class="btn-back">← プロジェクト一覧</a>
+            </div>
+        </div>
     </div>
 
     <div class="priority-legend">
@@ -37,13 +41,40 @@
     <div id="loading" class="loading">データを読み込み中...</div>
     <div id="error" class="error" style="display: none;"></div>
 
-    <button class="add-section-btn" id="addSectionBtn">+ セクション追加</button>
-    <div class="view-toggle">
-        <button class="toggle-btn active" id="cardViewBtn">📋 カード表示</button>
-        <button class="toggle-btn" id="listViewBtn">📄 リスト表示</button>
+    <div class="controls">
+        <button class="add-section-btn" id="addSectionBtn">+ セクション追加</button>
+        <div class="view-toggle">
+            <button class="toggle-btn active" id="cardViewBtn">📋 カード表示</button>
+            <button class="toggle-btn" id="listViewBtn">📄 リスト表示</button>
+            <button class="toggle-btn" id="ganttViewBtn">📊 ガント表示</button>
+        </div>
     </div>
 
     <div id="content"></div>
+
+    <!-- ガントチャート表示エリア -->
+    <div id="ganttContent" class="gantt-container" style="display: none;">
+        <div class="gantt-controls">
+            <div class="gantt-period">
+                <button class="period-btn" data-period="month">月表示</button>
+<button class="period-btn active" data-period="week">週表示</button>
+            </div>
+            <div class="gantt-today">
+                <button class="today-btn">今日</button>
+            </div>
+        </div>
+        <div class="gantt-chart">
+            <div class="gantt-header">
+                <div class="gantt-tasks-header">タスク</div>
+                <div class="gantt-timeline-header" id="ganttTimelineHeader"></div>
+            </div>
+            <div class="gantt-body" id="ganttBody"></div>
+        </div>
+        <div class="gantt-unscheduled">
+            <h3>📋 未スケジュール</h3>
+            <div class="unscheduled-tasks" id="unscheduledTasks"></div>
+        </div>
+    </div>
 
     <!-- セクション追加モーダル -->
     <div id="sectionModal" class="modal">
@@ -126,6 +157,34 @@
                         <option value="completed">完了</option>
                         <option value="on_hold">保留</option>
                     </select>
+                </div>
+
+                <!-- 日付・進捗管理 -->
+                <div class="form-group">
+                    <label class="form-label">📅 スケジュール</label>
+                    <div class="date-inputs">
+                        <div class="date-field">
+                            <label class="form-label-small" for="taskStartDate">開始日</label>
+                            <input type="date" id="taskStartDate" name="start_date" class="form-input">
+                        </div>
+                        <div class="date-field">
+                            <label class="form-label-small" for="taskEndDate">終了日</label>
+                            <input type="date" id="taskEndDate" name="end_date" class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskActualStartDate">実際の開始日</label>
+                    <input type="date" id="taskActualStartDate" name="actual_start_date" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="taskProgress">進捗率 (%)</label>
+                    <div class="progress-input">
+                        <input type="range" id="taskProgress" name="progress" min="0" max="100" value="0" class="form-range">
+                        <span class="progress-value">0%</span>
+                    </div>
                 </div>
 
                 <div class="form-actions">
